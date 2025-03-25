@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 
 function ParticipationForm() {
   const [userId, setUserId] = useState('');
@@ -7,6 +7,8 @@ function ParticipationForm() {
   const [required, setRequired] = useState(false);
   const [users, setUsers] = useState([]);
   const [events, setEvents] = useState([]);
+  const [message, setMessage] = useState('');
+  const [variant, setVariant] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:8000/api/users/')
@@ -40,9 +42,15 @@ function ParticipationForm() {
     })
       .then(response => response.json())
       .then(data => {
-        console.log('Success:', data);
+        setMessage('Participation created successfully!');
+        setVariant('success');
+        setUserId('');
+        setEventId('');
+        setRequired(false);
       })
       .catch(error => {
+        setMessage('Error creating participation.');
+        setVariant('danger');
         console.error('Error:', error);
       });
   };
@@ -52,6 +60,7 @@ function ParticipationForm() {
       <Row className="justify-content-center">
         <Col xs={12} md={6}>
           <h2>Create Participation</h2>
+          {message && <Alert variant={variant}>{message}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="formUserId">
               <Form.Label>User</Form.Label>
