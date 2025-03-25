@@ -5,7 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import './style.css';
+import './main.css';
 
 function Calendar() {
   const calendarRef = useRef(null);

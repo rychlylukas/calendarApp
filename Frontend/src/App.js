@@ -7,7 +7,7 @@ import UserForm from './UserForm';
 import RoomForm from './RoomForm';
 import EventForm from './EventForm';
 import ParticipationForm from './ParticipationForm';
-import './App.css';
+import './main.css';
 
 function App() {
   return (

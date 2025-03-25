@@ -1,152 +1,127 @@
-import React, { useRef, useEffect, useState } from 'react';
-import $ from 'jquery';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import './style.css';
+import React, { useState } from 'react';
+import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import './main.css';
 
-function Calendar() {
-  const calendarRef = useRef(null);
-  const [events, setEvents] = useState([]);
-  const [allEvents, setAllEvents] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [participations, setParticipations] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+function UserForm() {
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
+  const [message, setMessage] = useState('');
+  const [variant, setVariant] = useState('');
 
-  useEffect(() => {
-    // Fetch users from API
-    fetch('http://localhost:8000/api/users/')
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const user = {
+      name,
+      surname,
+      username,
+      email,
+      password_hash: password,
+      role
+    };
+    fetch('http://localhost:8000/api/users/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user)
+    })
       .then(response => response.json())
       .then(data => {
-        setUsers(data.users);
+        setMessage('User created successfully!');
+        setVariant('success');
+        setName('');
+        setSurname('');
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setRole('');
       })
-      .catch(error => console.error('Error fetching users:', error));
-
-    // Fetch events from API
-    fetch('http://localhost:8000/api/events/')
-      .then(response => response.json())
-      .then(data => {
-        const fetchedEvents = data.events.map(event => ({
-          id: event.id,
-          title: event.title,
-          start: `${event.date_from}T${event.time_start}`,
-          end: `${event.date_to}T${event.time_end}`,
-          description: event.description,
-          organizer_id: event.organizer_id,
-          capacity: event.capacity
-        }));
-        setAllEvents(fetchedEvents);
-      })
-      .catch(error => console.error('Error fetching events:', error));
-
-    // Fetch participations from API
-    fetch('http://localhost:8000/api/participations/')
-      .then(response => response.json())
-      .then(data => {
-        setParticipations(data.participations);
-      })
-      .catch(error => console.error('Error fetching participations:', error));
-  }, []);
-
-  const handleUserChange = (event) => {
-    setSelectedUser(event.target.value);
-  };
-
-  const handleFilterEvents = () => {
-    if (selectedUser) {
-      const userEventIds = participations
-        .filter(participation => participation.user_id === parseInt(selectedUser))
-        .map(participation => participation.event_id);
-      const userEvents = allEvents.filter(event => userEventIds.includes(event.id));
-      setEvents(userEvents);
-    }
-  };
-
-  const handleEventClick = (info) => {
-    setSelectedEvent(info.event);
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setSelectedEvent(null);
+      .catch(error => {
+        setMessage('Error creating user.');
+        setVariant('danger');
+        console.error('Error:', error);
+      });
   };
 
   return (
-    <div className="container-fluid mt-4">
-      <div className="row justify-content-center">
-        <div className='col-12 col-md-10 col-lg-8'>
-          <Form className="mb-3">
-            <Row className="align-items-end">
-              <Col xs={8}>
-                <Form.Group controlId="userSelect">
-                  <Form.Control as="select" onChange={handleUserChange}>
-                    <option value="">Select a user</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.name} {user.surname}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-              <Col xs={4}>
-                <Button variant="primary" onClick={handleFilterEvents} className="w-100 btn-black">
-                  Filter Events
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-          <div id='wrap'>
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay"
-              }}
-              editable={true}
-              droppable={true}
-              events={events}
-              eventClick={handleEventClick}
-              slotLabelFormat={{
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: false
-              }}
-              slotMinTime="00:00:00"
-            />
-            <div style={{ clear: 'both' }}></div>
-          </div>
-        </div>
-      </div>
-      {selectedEvent && (
-        <Modal show={modalIsOpen} onHide={closeModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>{selectedEvent.title}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p><strong>Description:</strong> {selectedEvent.extendedProps.description}</p>
-            <p><strong>Start:</strong> {selectedEvent.start.toLocaleString()}</p>
-            <p><strong>End:</strong> {selectedEvent.end.toLocaleString()}</p>
-            <p><strong>Organizer ID:</strong> {selectedEvent.extendedProps.organizer_id}</p>
-            <p><strong>Capacity:</strong> {selectedEvent.extendedProps.capacity}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeModal}>
-              Close
+    <Container className="mt-5">
+      <Row className="justify-content-center">
+        <Col xs={12} md={6}>
+          <h2>Create User</h2>
+          {message && <Alert variant={variant}>{message}</Alert>}
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="formName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formSurname">
+              <Form.Label>Surname</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter surname"
+                value={surname}
+                onChange={(e) => setSurname(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formUsername">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formEmail">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formRole">
+              <Form.Label>Role</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
+            </Form.Group>
+
+            <Button variant="primary" type="submit" className="w-100 mt-3 btn-black">
+              Create User
             </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
-    </div>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
-export default Calendar;
+export default UserForm;

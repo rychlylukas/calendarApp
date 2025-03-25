@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import './main.css';
 
 function ParticipationForm() {
   const [userId, setUserId] = useState('');
@@ -103,7 +104,7 @@ function ParticipationForm() {
               />
             </Form.Group>
 
-            <Button variant="primary" type="submit" className="w-100 mt-3">
+            <Button variant="primary" type="submit" className="w-100 mt-3 btn-black">
               Create Participation
             </Button>
           </Form>
